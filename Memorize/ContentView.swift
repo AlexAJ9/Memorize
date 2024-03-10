@@ -7,51 +7,80 @@
 
 import SwiftUI
 
+enum Theme {
+    case halloween
+    case animals
+    case vehicles
+}
 struct ContentView: View {
-    @State var cardCount = 4
-    let emojis: [String]=["😂","😎","🥳","👿","😺","✌️","😽","😷"]
+    @State var currentTheme: Theme = Theme.halloween
+    
+    let halloweenEmojis: [String] = ["😂", "😎", "🥳" ,"👿" ,"😺" ,"✌️" ,"😽" ,"😷"]
+    
+    let animalEmojis: [String] = ["🐶", "🐱", "🐭", "🐰", "🐯", "🐨", "🐻", "🦊"]
+
+    let vehicleEmojis: [String] = ["🚗", "🚕", "🚂", "🚁", "🚀", "🚢", "🛴", "🛵"]
+
+    var currentThemeEmojis: [String] {
+        switch currentTheme {
+        case .halloween:
+            return halloweenEmojis
+        case .animals:
+            return animalEmojis
+        case .vehicles:
+            return vehicleEmojis
+        }
+    }
     
     var body: some View {
         VStack {
+            Text("Memorize!").font(.title).fontWeight(.semibold)
             ScrollView{
                 cards
             }
             Spacer()
-            cardCountAdjusters
+            themeChosers
         }.padding()
     }
     
     var cards: some View {
         LazyVGrid(columns: [GridItem(.adaptive(minimum: 120))]) {
-            ForEach(0..<cardCount, id:\.self){ index in
-                CardView(content: emojis[index]).aspectRatio(2/3, contentMode: .fit)
+            ForEach(currentThemeEmojis.indices, id:\.self){ index in
+                CardView(content: currentThemeEmojis[index]).aspectRatio(2/3, contentMode: .fit)
             }
         }.foregroundColor(.orange)
     }
     
-    var cardCountAdjusters: some View {
+    var themeChosers: some View {
         HStack {
-            cardAdder
+            AnimalThemeButton
             Spacer()
-            cardRemover
-        }.imageScale(.large).font(.largeTitle)
+            VehiclesThemeButton
+            Spacer()
+            EmojisThemeButton
+        }.imageScale(.large).font(.largeTitle).padding()
     }
     
-    func cardCountAdjuster (by offset: Int, symbol: String) -> some View {
+    func themeChoserButton(theme: Theme, symbol: String) -> some View {
         Button(action: {
-                cardCount += offset
-        }, label:  {
+            currentTheme = theme
+        }, label: {
             Image(systemName: symbol)
-        }).disabled(cardCount + offset < 1 || cardCount + offset > emojis.count)
+        })
     }
     
-    var cardAdder: some View {
-        cardCountAdjuster(by: +1, symbol: "plus.circle.fill")
+    var AnimalThemeButton: some View {
+        themeChoserButton(theme: Theme.animals, symbol: "hare.fill")
     }
     
-    var cardRemover: some View {
-        cardCountAdjuster(by: -1, symbol: "minus.circle.fill")
+    var VehiclesThemeButton: some View {
+        themeChoserButton(theme: Theme.vehicles, symbol: "car.side.fill")
     }
+    
+    var EmojisThemeButton: some View {
+        themeChoserButton(theme: Theme.halloween, symbol: "figure.run")
+    }
+    
 }
 
 struct CardView: View {
