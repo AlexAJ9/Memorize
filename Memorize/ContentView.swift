@@ -16,12 +16,14 @@ struct ContentView: View {
     @State var currentTheme: Theme = Theme.halloween
     
     let halloweenEmojis: [String] = ["😂", "😎", "🥳" ,"👿" ,"😺" ,"✌️" ,"😽" ,"😷"]
-    
+  
     let animalEmojis: [String] = ["🐶", "🐱", "🐭", "🐰", "🐯", "🐨", "🐻", "🦊"]
 
     let vehicleEmojis: [String] = ["🚗", "🚕", "🚂", "🚁", "🚀", "🚢", "🛴", "🛵"]
+    
 
     var currentThemeEmojis: [String] {
+
         switch currentTheme {
         case .halloween:
             return halloweenEmojis
@@ -31,7 +33,6 @@ struct ContentView: View {
             return vehicleEmojis
         }
     }
-    
     var body: some View {
         VStack {
             Text("Memorize!").font(.title).fontWeight(.semibold)
@@ -44,48 +45,57 @@ struct ContentView: View {
     }
     
     var cards: some View {
-        LazyVGrid(columns: [GridItem(.adaptive(minimum: 120))]) {
-            ForEach(currentThemeEmojis.indices, id:\.self){ index in
-                CardView(content: currentThemeEmojis[index]).aspectRatio(2/3, contentMode: .fit)
+        var shuffeledEmojis = currentThemeEmojis + currentThemeEmojis
+        shuffeledEmojis.shuffle()
+        
+        return LazyVGrid(columns: [GridItem(.adaptive(minimum: 60))]) {
+            
+            ForEach(shuffeledEmojis.indices, id:\.self){ index in
+                CardView(content: shuffeledEmojis[index]).aspectRatio(2/3, contentMode: .fit)
             }
         }.foregroundColor(.orange)
     }
     
     var themeChosers: some View {
         HStack {
+            Spacer()
             AnimalThemeButton
             Spacer()
             VehiclesThemeButton
             Spacer()
             EmojisThemeButton
+            Spacer()
         }.imageScale(.large).font(.largeTitle).padding()
     }
     
-    func themeChoserButton(theme: Theme, symbol: String) -> some View {
-        Button(action: {
-            currentTheme = theme
-        }, label: {
-            Image(systemName: symbol)
-        })
+    func themeChoserButton(theme: Theme, symbol: String, text: String) -> some View {
+            Button(action: {
+                currentTheme = theme
+            }, label: {
+                VStack {
+                    Image(systemName: symbol)
+                    Text(text).font(.caption)
+                }
+            })
     }
     
     var AnimalThemeButton: some View {
-        themeChoserButton(theme: Theme.animals, symbol: "hare.fill")
+        themeChoserButton(theme: Theme.animals, symbol: "pawprint.circle", text: "Animal")
     }
     
     var VehiclesThemeButton: some View {
-        themeChoserButton(theme: Theme.vehicles, symbol: "car.side.fill")
+        themeChoserButton(theme: Theme.vehicles, symbol: "car.circle", text: "Vehicles")
     }
     
     var EmojisThemeButton: some View {
-        themeChoserButton(theme: Theme.halloween, symbol: "figure.run")
+        themeChoserButton(theme: Theme.halloween, symbol: "person.circle", text: "Emojis")
     }
     
 }
 
 struct CardView: View {
-    let content:String
-    @State  var isFaceUp = false
+    let content: String
+    @State var isFaceUp = false
     
     var body: some View{
         ZStack {
