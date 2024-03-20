@@ -13,9 +13,14 @@ enum Theme {
     case vehicles
 }
 
+func getNumbeOfCards() -> Int {
+    Int.random(in: 4...16)
+}
+
 struct ContentView: View {
     @State var currentTheme: Theme = Theme.halloween
 
+    @State var numberOfCards = getNumbeOfCards()
     
     let halloweenEmojis: [String] = ["😂", "😎", "🥳" ,"👿" ,"😺" ,"✌️" ,"😽" ,"😷"]
   
@@ -62,7 +67,7 @@ struct ContentView: View {
         
         return LazyVGrid(columns: [GridItem(.adaptive(minimum: 60))]) {
             
-            ForEach(shuffeledEmojis.indices, id:\.self){ index in
+            ForEach(0..<numberOfCards, id:\.self){ index in
                 CardView(content: shuffeledEmojis[index]).aspectRatio(2/3, contentMode: .fit)
             }
         }.foregroundColor(themeToColor)
@@ -80,9 +85,11 @@ struct ContentView: View {
         }.imageScale(.large).font(.largeTitle).padding()
     }
     
+ 
     func themeChoserButton(theme: Theme, symbol: String, text: String) -> some View {
             Button(action: {
                 currentTheme = theme
+                numberOfCards = getNumbeOfCards()
             }, label: {
                 VStack {
                     Image(systemName: symbol)
