@@ -12,8 +12,10 @@ enum Theme {
     case animals
     case vehicles
 }
+
 struct ContentView: View {
     @State var currentTheme: Theme = Theme.halloween
+
     
     let halloweenEmojis: [String] = ["😂", "😎", "🥳" ,"👿" ,"😺" ,"✌️" ,"😽" ,"😷"]
   
@@ -23,7 +25,6 @@ struct ContentView: View {
     
 
     var currentThemeEmojis: [String] {
-
         switch currentTheme {
         case .halloween:
             return halloweenEmojis
@@ -31,6 +32,17 @@ struct ContentView: View {
             return animalEmojis
         case .vehicles:
             return vehicleEmojis
+        }
+    }
+
+    var themeToColor: Color {
+        switch currentTheme {
+        case .halloween:
+            return .orange
+        case .animals:
+            return .green
+        case .vehicles:
+            return .blue
         }
     }
     var body: some View {
@@ -53,7 +65,7 @@ struct ContentView: View {
             ForEach(shuffeledEmojis.indices, id:\.self){ index in
                 CardView(content: shuffeledEmojis[index]).aspectRatio(2/3, contentMode: .fit)
             }
-        }.foregroundColor(.orange)
+        }.foregroundColor(themeToColor)
     }
     
     var themeChosers: some View {
