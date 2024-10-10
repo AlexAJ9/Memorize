@@ -1,5 +1,5 @@
 //
-//  ContentView.swift
+//  EmojiMemoryGameVIew.swift
 //  Memorize
 //
 //  Created by Alexander A on 2.03.24.
@@ -17,9 +17,10 @@ func getNumbeOfCards() -> Int {
     Int.random(in: 4...16)
 }
 
-struct ContentView: View {
+struct EmojiMemoryGameView: View {
+    @ObservedObject var viewModel: EmojiMemoryGame
+    
     @State var currentTheme: Theme = Theme.halloween
-
     @State var numberOfCards = getNumbeOfCards()
     
     let halloweenEmojis: [String] = ["😂", "😎", "🥳" ,"👿" ,"😺" ,"✌️" ,"😽" ,"😷"]
@@ -54,21 +55,42 @@ struct ContentView: View {
         VStack {
             Text("Memorize!").font(.title).fontWeight(.semibold)
             ScrollView{
-                cards
+                cards.animation(.default, value: viewModel.cards)
             }
             Spacer()
             themeChosers
+            Button("Shuffle") {
+                viewModel.shuffle()
+            }
         }.padding()
     }
     
     var cards: some View {
         var shuffeledEmojis = currentThemeEmojis + currentThemeEmojis
         shuffeledEmojis.shuffle()
-        
-        return LazyVGrid(columns: [GridItem(.adaptive(minimum: 60))]) {
+        var cardWidth: CGFloat {
+            let screenWidth = UIScreen.main.bounds.width
+            let padding: CGFloat = 16 // Adjust as needed
+            let spacing: CGFloat = 8 // Adjust as needed
+            let totalSpacing = padding + spacing // Total spacing on both sides of each card
+            let availableWidth = screenWidth - totalSpacing // Available width for cards
             
-            ForEach(0..<numberOfCards, id:\.self){ index in
-                CardView(content: shuffeledEmojis[index]).aspectRatio(2/3, contentMode: .fit)
+            let minCardWidth: CGFloat = 60 // Minimum width for each card
+            
+            // Calculate the number of cards per row
+            let numberOfColumns = max(1, Int((availableWidth + spacing) / (minCardWidth + spacing)))
+
+            // Calculate the actual width for each card
+            let cardWidth = (availableWidth - (CGFloat(numberOfColumns - 1) * spacing)) / CGFloat(numberOfColumns)
+            
+            return cardWidth
+        }
+        return LazyVGrid(columns: [GridItem(.adaptive(minimum: 85),spacing: 0)],spacing: 0) {
+            
+            ForEach(viewModel.cards) { card in
+                CardView(card).aspectRatio(2/3, contentMode: .fit).padding(4).onTapGesture {
+                    viewModel.choose(card)
+                }
             }
         }.foregroundColor(themeToColor)
     }
@@ -113,8 +135,11 @@ struct ContentView: View {
 }
 
 struct CardView: View {
-    let content: String
-    @State var isFaceUp = false
+    let card: MemoryGame<String>.Card
+    
+    init(_ card: MemoryGame<String>.Card) {
+        self.card = card
+    }
     
     var body: some View{
         ZStack {
@@ -122,20 +147,17 @@ struct CardView: View {
             Group {
                 base.fill(.white)
                 base.strokeBorder(lineWidth:2)
-                Text(content).font(.largeTitle)
-            }.opacity(isFaceUp ? 1 : 0)
+                Text(card.content).font(.system(size: 200)).minimumScaleFactor(0.01).aspectRatio(1,contentMode: .fit)
+            }.opacity(card.isFaceUp ? 1 : 0)
             
-            base.fill().opacity(isFaceUp ? 0 : 1)
-           
-        }.onTapGesture{
-            isFaceUp.toggle()
-        }
+            base.fill().opacity(card.isFaceUp ? 0 : 1)
+        }.opacity(card.isFaceUp || !card.isMatched ? 1 : 0)
     }
 }
 
-struct ContentView_Previews: PreviewProvider {
+struct EmojiMemoryGameView_Previews: PreviewProvider {
     static var previews: some View {
-        ContentView()
+        EmojiMemoryGameView(viewModel: EmojiMemoryGame())
     }
 }
 
